@@ -1,9 +1,9 @@
-
 import json
 import sys
-import geopy.distance
+import turtle
 from configparser import ConfigParser
 from urllib import error, request
+import geopy.distance
 from geopy.geocoders import Nominatim
 
 BASE_GEOLOCATION_API_URL = "https://api.ipgeolocation.io/ipgeo"
@@ -49,6 +49,7 @@ def display_user_location_info(user_location_data):
     print(f"Country: {country}")
     print(f"Latitude: {latitude}")
     print(f"Longitude: {longitude}")
+
 
 # ISS INFO
 def build_iss_query():
@@ -97,6 +98,32 @@ def display_iss_location_info(iss_location_data):
         print("Impossible to detect the country")
 
 
+def map_show(user_location_data, iss_location_data):
+    user_latitude = user_location_data["latitude"]
+    user_longitude = user_location_data["longitude"]
+
+    iss_latitude = iss_location_data["latitude"]
+    iss_longitude = iss_location_data["longitude"]
+
+    screen = turtle.Screen()
+    screen.setup(1280, 720)
+    screen.setworldcoordinates(-180, -90, 180, 90)
+
+    screen.bgpic("images\map.gif")
+    screen.register_shape("images\iss.gif")
+    screen.register_shape("images\dot.gif")
+    iss = turtle.Turtle()
+    iss.shape("images\iss.gif")
+    iss.setheading(45)
+    iss.penup()
+    user = turtle.Turtle()
+    user.shape("images\dot.gif")
+    user.penup()
+
+    while True:
+        user.goto(float(user_longitude), float(user_latitude))
+        iss.goto(float(iss_longitude), float(iss_latitude))
+
 def get_distance(user_location_data, iss_location_data):
     user_latitude = user_location_data["latitude"]
     user_longitude = user_location_data["longitude"]
@@ -121,3 +148,4 @@ iss_location_data = get_iss_location_data(iss_query_url)
 display_iss_location_info(iss_location_data)
 # INFO
 get_distance(user_location_data, iss_location_data)
+map_show(user_location_data, iss_location_data)
