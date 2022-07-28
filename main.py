@@ -10,21 +10,19 @@ BASE_GEOLOCATION_API_URL = "https://api.ipgeolocation.io/ipgeo"
 BASE_ISS_API_URL = "https://api.wheretheiss.at/v1/satellites"
 
 # USER INFO
-
-def _get_location_api():
+def _get_location_api_key():
     config = ConfigParser()
     config.read("hidden.ini")
     return config["ipgeolocation"]["api_key_geoloc"]
 
 
 def build_location_query():
-    api_key = _get_location_api()
+    api_key = _get_location_api_key()
     url = f"{BASE_GEOLOCATION_API_URL}?apiKey={api_key}"
     return url
 
 
 def get_user_location_data(user_query_url):
-    response = request.urlopen(user_query_url)
     try:
         response = request.urlopen(user_query_url)
     except error.HTTPError as http_error:
@@ -60,7 +58,6 @@ def build_iss_query():
 
 
 def get_iss_location_data(iss_query_url):
-    response = request.urlopen(iss_query_url)
     try:
         response = request.urlopen(iss_query_url)
     except error.HTTPError as http_error:
@@ -115,7 +112,6 @@ def get_distance(user_location_data, iss_location_data):
 
 
 # USER
-
 user_query_url = build_location_query()
 user_location_data = get_user_location_data(user_query_url)
 display_user_location_info(user_location_data)
