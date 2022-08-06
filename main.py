@@ -1,5 +1,4 @@
 import json
-import socket
 import sys
 from configparser import ConfigParser
 from urllib import error, request
