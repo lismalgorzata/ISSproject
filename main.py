@@ -1,5 +1,4 @@
 import json
-import socket
 import sys
 from configparser import ConfigParser
 from urllib import error, request
@@ -53,14 +52,49 @@ def get_user_location_data(user_query_url):
 
 
 def display_user_location_info(user_location_data):
-    country = user_location_data["country_name"]
-    latitude = user_location_data["latitude"]
-    longitude = user_location_data["longitude"]
+    global message
+    message = input('''Welcome to User&ISS Locator. 
+If you want an automatic process, press A.
+If you want to input your own coordinates, press C.
+''')
 
-    print("YOUR LOCATION")
-    print(f"Country: {country}")
-    print(f"Longitude: {longitude}")
-    print(f"Latitude: {latitude}")
+    if message == "A" or message == "a":
+        country = user_location_data["country_name"]
+        latitude = user_location_data["latitude"]
+        longitude = user_location_data["longitude"]
+
+        print("YOUR LOCATION")
+        print(f"Country: {country}")
+        print(f"Latitude: {latitude}")
+        print(f"Longitude: {longitude}")
+
+    elif message == "C" or message == "c":
+        global typed_latitude
+        typed_latitude = input("Latitude: ")
+        global typed_longitude
+        typed_longitude = input("Longitude: ")
+
+        geolocator = Nominatim(user_agent="geoapiExercises")
+        location = geolocator.reverse(typed_latitude + "," + typed_longitude)
+
+        try:
+            address = location.raw['address']
+            country = address.get('country', '')
+
+            print("USER LOCATION")
+            print(f"Country: {country}")
+            print(f"Latitude: {typed_latitude}")
+            print(f"Longitude: {typed_longitude}")
+
+        except AttributeError:
+            print("USER LOCATION")
+            print(f"Latitude: {typed_latitude}")
+            print(f"Longitude: {typed_longitude}")
+            print("Impossible to detect the country")
+
+    else:
+        print("Incorrect, try again.")
+        return display_user_location_info(user_location_data)
 
 
 # ISS INFO
@@ -100,41 +134,51 @@ def display_iss_location_info(iss_location_data):
 
         print("ISS LOCATION")
         print(f"Country: {country}")
-        print(f"Longitude: {longitude}")
         print(f"Latitude: {latitude}")
+        print(f"Longitude: {longitude}")
 
     except AttributeError:
         print("ISS LOCATION")
-        print(f"Longitude: {longitude}")
         print(f"Latitude: {latitude}")
+        print(f"Longitude: {longitude}")
         print("Impossible to detect the country")
 
 
 def map_show(user_location_data, iss_location_data):
-    user_latitude = float(user_location_data["latitude"])
-    user_longitude = float(user_location_data["longitude"])
-    user_coords = [user_latitude, user_longitude]
-
     iss_latitude = float(iss_location_data["latitude"])
     iss_longitude = float(iss_location_data["longitude"])
     iss_coords = [iss_latitude, iss_longitude]
 
+    if message == "A" or message == "a":
+        user_latitude = float(user_location_data["latitude"])
+        user_longitude = float(user_location_data["longitude"])
+        user_coords = [user_latitude, user_longitude]
+
+    else:
+        user_latitude = float(typed_latitude)
+        user_longitude = float(typed_longitude)
+        user_coords = [user_latitude, user_longitude]
+
     dist_map = folium.Map(location=user_coords, zoom_start=12)
-    folium.Marker(location=user_coords, icon=folium.Icon(color='green'), popup='user').add_to(dist_map)
-    folium.Marker(location=iss_coords, icon=folium.Icon(color='blue'), popup='iss').add_to(dist_map)
+    folium.Marker(location=user_coords, icon=folium.Icon(color='green'), popup='USER :)').add_to(dist_map)
+    folium.Marker(location=iss_coords, icon=folium.Icon(color='blue'), popup='ISS (:').add_to(dist_map)
 
     folium.PolyLine(locations=[user_coords, iss_coords], color='red').add_to(dist_map)
 
     dist_map.save("map.html")
     webbrowser.open("map.html")
-
     return
 
-def get_distance(user_location_data, iss_location_data):
-    user_latitude = user_location_data["latitude"]
-    user_longitude = user_location_data["longitude"]
 
-    user_coords = (user_latitude, user_longitude)
+def get_distance(user_location_data, iss_location_data):
+    if message == "A" or message == "a":
+        user_latitude = user_location_data["latitude"]
+        user_longitude = user_location_data["longitude"]
+        user_coords = (user_latitude, user_longitude)
+    else:
+        user_latitude = typed_latitude
+        user_longitude = typed_longitude
+        user_coords = (user_latitude, user_longitude)
 
     iss_latitude = iss_location_data["latitude"]
     iss_longitude = iss_location_data["longitude"]
@@ -144,8 +188,7 @@ def get_distance(user_location_data, iss_location_data):
     distance = geopy.distance.geodesic(user_coords, iss_coords).km
     distance = str(round(distance, 2))
 
-    print(f"You are {distance} km far from ISS!")
-    print(f"")
+    print(f"You are around {distance} km far from ISS!")
 
 
 # USER
