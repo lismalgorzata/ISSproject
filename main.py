@@ -1,4 +1,5 @@
 import json
+import socket
 import sys
 from configparser import ConfigParser
 from urllib import error, request
@@ -19,9 +20,17 @@ def _get_location_api_key():
     return config["ipgeolocation"]["api_key_geoloc"]
 
 
-def build_location_query():
+def get_ip_address():
+    url="https://api.ipgeolocation.io/getip"
+    response = request.urlopen(url)
+    data = response.read()
+    return json.loads(data)
+
+
+def build_location_query(ip_address):
+    ip_addr = ip_address["ip"]
     api_key = _get_location_api_key()
-    url = f"{BASE_GEOLOCATION_API_URL}?apiKey={api_key}"
+    url = f"{BASE_GEOLOCATION_API_URL}?apiKey={api_key}&ip={ip_addr}"
     return url
 
 
@@ -140,7 +149,8 @@ def get_distance(user_location_data, iss_location_data):
 
 
 # USER
-user_query_url = build_location_query()
+ip_address = get_ip_address()
+user_query_url = build_location_query(ip_address)
 user_location_data = get_user_location_data(user_query_url)
 display_user_location_info(user_location_data)
 # ISS
